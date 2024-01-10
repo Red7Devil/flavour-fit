@@ -1,0 +1,63 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - test-backend
+  - build-backend
+  - build-frontend
+  - deploy-backend
+  - deploy-frontend
+
+variables:
+  DOCKER_DRIVER: overlay2
+  SPRING_OUTPUT_DIRECTORY: target
+  REACT_OUTPUT_DIRECTORY: build
+
+test-backend:
+  stage: test-backend
+  image: maven:latest
+  script:
+    - cd Backend
+    - mvn test
+  only:
+    - main
+
+build-backend:
+  stage: build-backend
+  image: maven:latest
+  script:
+    - cd Backend
+    - mvn clean install
+  artifacts:
+    paths:
+      - Backend/target/*.jar
+  only:
+    - main
+
+build-frontend:
+  stage: build-frontend
+  image: node:latest
+  script:
+    - cd Frontend
+    - echo "Building frontend"
+  artifacts:
+    paths:
+      - Frontend/build
+  only:
+    - main
+
+deploy-backend:
+  stage: deploy-backend
+  script:
+    - echo "Deploying to Render"
+  only:
+    - main
+
+deploy-frontend:
+  stage: deploy-frontend
+  script:
+    - echo "Deploying to Netlify"
+  only:
+    - main
